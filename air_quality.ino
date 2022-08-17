@@ -34,6 +34,9 @@
 #include <SPI.h>
 #include "Adafruit_PM25AQI.h"
 
+// replace with your wallet address, if address is less than 44 characters, append with '-'
+static uint8_t solanaWalletAddress[44] = "REPLACE WITH YOUR WALLET ADDRESS";
+
 Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
 
 // This EUI must be in little-endian format, so least-significant-byte
@@ -156,11 +159,14 @@ void do_send(osjob_t* j) {
      delay(500);  // try again in a bit!
      return;
     }
-    
-    uint8_t pm25[8] = "PM 2.5:";
-    pm25[7] = data.pm25_standard;
+
+    uint8_t transferData[46];
+    for (int i = 0; i < 44; i++) {
+      transferData[i] = solanaWalletAddress[i];
+    }
+    transferData[45] = data.pm25_standard;
     // Prepare upstream data transmission at the next possible time.
-    LMIC_setTxData2(1, pm25, sizeof(pm25) - 1, 0);
+    LMIC_setTxData2(1, transferData, sizeof(transferData) - 1, 0);
     Serial.println(F("Packet queued"));
   }
   // Next TX is scheduled after TX_COMPLETE event.
